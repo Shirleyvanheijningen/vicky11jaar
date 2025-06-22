@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uitnodiging voor Vicky's Paardenfeestje!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Comic+Neue:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow: hidden; /* Voorkom scrollbalken door animaties */
+            background-color: #87CEEB; /* Luchtblauw als fallback */
+        }
+        .game-container {
+            width: 100%;
+            max-width: 600px; /* Maximale breedte voor het spel */
+            height: 400px;
+            position: relative;
+            overflow: hidden;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            margin: 20px auto; /* Centreer het spel */
+        }
+        .sky {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: #87CEEB; /* Luchtblauw achtergrond voor het spel */
+        }
+        .sun {
+            position: absolute;
+            top: 20px;
+            left: 30px;
+            width: 80px;
+            height: 80px;
+            background-color: #FFD700; /* Goudgeel */
+            border-radius: 50%;
+            box-shadow: 0 0 20px rgba(255, 223, 0, 0.8);
+        }
+        .background-text {
+            position: absolute;
+            top: 30px;
+            width: 100%;
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: rgba(255, 255, 255, 0.6);
+            font-family: 'Comic Neue', cursive;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            user-select: none;
+        }
+        .horse {
+            width: 80px;
+            height: 80px;
+            position: absolute;
+            bottom: 50px;
+            left: 50px;
+            transition: transform 0.3s ease-out;
+            font-size: 70px;
+            line-height: 80px;
+            text-align: center;
+            transform: scaleX(-1);
+            z-index: 10;
+        }
+        .horse.jump {
+            transform: translateY(-150px) scaleX(-1);
+        }
+        
+        .horse.flying {
+            animation: gentleBob 2s ease-in-out forwards;
+        }
+
+        .horse::after {
+            content: '🪽';
+            position: absolute;
+            font-size: 40px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.1));
+            transform-origin: 100% 90%;
+            top: 0px;
+            left: 25px;
+            z-index: 11;
+        }
+
+        .horse.flying::after {
+            opacity: 1;
+            animation: flap 0.4s ease-in-out infinite alternate;
+        }
+        
+        @keyframes gentleBob {
+            0%   { transform: translateY(0)    scaleX(-1); }
+            25%  { transform: translateY(-170px) scaleX(-1); }
+            75%  { transform: translateY(-170px) scaleX(-1); }
+            100% { transform: translateY(0)    scaleX(-1); }
+        }
+        
+        @keyframes flap {
+            from { transform: rotate(-20deg); }
+            to   { transform: rotate(15deg); }
+        }
+
+        .obstacle {
+            position: absolute;
+            bottom: 50px;
+            right: -80px;
+            transition: border-color 0.2s;
+            z-index: 5;
+        }
+        .obstacle-fence { border: 2px solid #603813; border-radius: 0.25rem; }
+        .obstacle-log { background-color: #8B4513; border: 3px solid #5C3317; border-radius: 25px; }
+        .obstacle-striped { background: repeating-linear-gradient(45deg, #d9534f, #d9534f 10px, #ffffff 10px, #ffffff 20px); border: 2px solid #a94442; border-radius: 0.25rem; }
+        .obstacle-wall { background-color: #BDBDBD; background-image: linear-gradient(#9E9E9E 1px, transparent 1px), linear-gradient(90deg, #9E9E9E 1px, transparent 1px); background-size: 20px 10px; border: 2px solid #616161; }
+        .obstacle-hay { background-color: #F0E68C; border: 4px solid #DAA520; border-radius: 8px; }
+        .obstacle-rock { background-color: #808080; border: 2px solid #696969; border-radius: 50% 50% 20% 20%; }
+        
+        .obstacle-hit {
+            border-color: red !important;
+            animation: shake 0.5s;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .ground {
+            width: 200%;
+            height: 50px;
+            background-color: #228B22;
+            background-image: linear-gradient(45deg, #3CB371 25%, transparent 25%), linear-gradient(-45deg, #3CB371 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #3CB371 75%), linear-gradient(-45deg, transparent 75%, #3CB371 75%);
+            background-size: 20px 20px;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            animation: scrollGround 5s linear infinite;
+            z-index: 1;
+        }
+        @keyframes scrollGround {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .score {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            font-family: 'Comic Neue', cursive;
+            text-shadow: 1px 1px 2px black;
+            z-index: 100;
+        }
+        .start-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 1.5rem;
+            text-align: center;
+            background-color: rgba(0,0,0,0.6);
+            padding: 20px;
+            border-radius: 0.5rem;
+            z-index: 100;
+            font-family: 'Comic Neue', cursive;
+        }
+        .invitation-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            padding: 1rem;
+        }
+        .invitation-content {
+            background-color: #FFFACD;
+            padding: 30px;
+            border-radius: 1rem;
+            text-align: center;
+            max-width: 90%;
+            width: 500px;
+            box-shadow: 0 0 20px rgba(255,215,0,0.7);
+            border: 5px solid #FFD700;
+            font-family: 'Comic Neue', cursive;
+            color: #8B4513;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .invitation-content h2 {
+            font-size: 2.2rem;
+            color: #D2691E;
+            margin-bottom: 1rem;
+        }
+        .invitation-content p {
+            font-size: 1.1rem;
+            margin-bottom: 0.75rem;
+            line-height: 1.6;
+        }
+        .invitation-content strong {
+            color: #CD5C5C;
+        }
+        .action-button {
+            background-color: #FFC107;
+            color: #5D4037;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            margin-right: 5px;
+            margin-left: 5px;
+            transition: background-color 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .action-button:hover {
+            background-color: #FFA000;
+        }
+
+        .cloud {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.8;
+            animation: moveCloud 60s linear infinite;
+        }
+        .cloud::before, .cloud::after {
+            content: '';
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+        }
+        @keyframes moveCloud {
+            0% { transform: translateX(-200px); }
+            100% { transform: translateX(calc(600px + 200px)); }
+        }
+
+    </style>
+</head>
+<body class="bg-blue-300 flex flex-col items-center justify-center min-h-screen p-4">
+
+    <div class="game-container shadow-2xl rounded-lg">
+        <div class="sky">
+             <div class="sun"></div>
+             <div class="background-text">Vicky wordt 11!</div>
+        </div>
+        <div class="ground"></div>
+        <div id="horse" class="horse">🐎</div>
+        <div id="obstacleArea"></div>
+        <div id="score" class="score">Score: 0</div>
+        <div id="startMessage" class="start-message">
+            Klik (of tik) om te springen!<br>Haal 10 punten voor de uitnodiging!
+        </div>
+    </div>
+
+    <div id="invitationModal" class="invitation-modal hidden">
+        <div class="invitation-content">
+            <h2>Jij bent uitgenodigd!</h2>
+            <p>Ik vier mijn <strong>11e verjaardag</strong> en jij bent uitgenodigd voor mijn feestje!</p>
+            <p><strong>Datum:</strong> Woensdag 9 juli</p>
+            <p><strong>Tijd:</strong> Uit school tot 16:30</p>
+            <p><strong>Locatie:</strong> Assendelftlaan 12 Monster</p>
+            <p><strong>Neem je zwemkleding en een handdoek mee!</strong></p>
+            <p>Laat je even weten of je erbij kunt zijn?</p>
+            <p>Ik hoop je daar te zien!</p>
+            <p>Groetjes van, <br><strong>Vicky</strong> 🎉🐴</p>
+            
+            <div>
+                <button id="playAgainButton" class="action-button">Speel opnieuw!</button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Constants
+        const horse = document.getElementById('horse');
+        const obstacleArea = document.getElementById('obstacleArea');
+        const scoreDisplay = document.getElementById('score');
+        const invitationModal = document.getElementById('invitationModal');
+        const playAgainButton = document.getElementById('playAgainButton');
+        const startMessage = document.getElementById('startMessage');
+        const gameContainer = document.querySelector('.game-container');
+        const sky = document.querySelector('.sky');
+        
+        // Game state
+        let score = 0;
+        let gameStarted = false;
+        let isJumping = false;
+        let obstacleInterval;
+        let isFlying = false;
+        let lastClicks = [];
+        
+        // Game config
+        const obstacleSpeed = 5; 
+        const obstacleCreationInterval = 2000;
+        const pointsToWin = 10; 
+        const obstacleBaseHeight = 50;
+        const obstacleTypes = ['fence', 'log', 'striped', 'wall', 'hay', 'rock'];
+        const flightDuration = 2000;
+
+        function createClouds() {
+            const numClouds = 3; 
+            for (let i = 0; i < numClouds; i++) {
+                const cloud = document.createElement('div');
+                cloud.classList.add('cloud');
+                const cloudSizeBase = Math.random() * 50 + 80; 
+                cloud.style.width = `${cloudSizeBase}px`; 
+                cloud.style.height = `${cloudSizeBase * 0.3}px`; 
+                cloud.style.top = `${Math.random() * 40 + 5}%`; 
+                cloud.style.left = `${Math.random() * 100}%`; 
+                
+                cloud.style.animationName = 'moveCloud';
+                cloud.style.animationDuration = `${Math.random() * 30 + 40}s`; 
+                cloud.style.animationDelay = `-${Math.random() * 60}s`;
+
+                const before = document.createElement('div');
+                const after = document.createElement('div');
+                
+                before.style.width = `${cloudSizeBase * 0.6}px`;
+                before.style.height = `${cloudSizeBase * 0.6}px`;
+                before.style.top = `-${cloudSizeBase * 0.3}px`;
+                before.style.left = `${cloudSizeBase * 0.1}px`;
+
+                after.style.width = `${cloudSizeBase * 0.8}px`;
+                after.style.height = `${cloudSizeBase * 0.8}px`;
+                after.style.top = `-${cloudSizeBase * 0.4}px`;
+                after.style.right = `${cloudSizeBase * 0.05}px`;
+                
+                Array.from([before,after]).forEach(el => {
+                    el.style.position = 'absolute';
+                    el.style.background = 'white';
+                    el.style.borderRadius = '50%';
+                });
+
+                cloud.appendChild(before);
+                cloud.appendChild(after);
+                sky.appendChild(cloud);
+            }
+        }
+
+        function activateFlightMode() {
+            if (isFlying) return;
+
+            isFlying = true;
+            horse.classList.remove('jump');
+            horse.classList.add('flying');
+
+            setTimeout(() => {
+                isFlying = false;
+                horse.classList.remove('flying');
+            }, flightDuration);
+        }
+
+        function handleTap() {
+            if (!gameStarted && score < pointsToWin) { 
+                startGame();
+            }
+
+            if (isFlying) return;
+
+            const now = Date.now();
+            lastClicks.push(now);
+            lastClicks = lastClicks.filter(time => now - time < 1000);
+
+            if (lastClicks.length >= 3) {
+                activateFlightMode();
+                lastClicks = [];
+                return;
+            }
+
+            if (!isJumping) {
+                isJumping = true;
+                horse.classList.add('jump');
+                setTimeout(() => {
+                    horse.classList.remove('jump');
+                    isJumping = false;
+                }, 500);
+            }
+        }
+
+        function createObstacle() {
+            if (!gameStarted) return; 
+            const obstacle = document.createElement('div');
+            obstacle.classList.add('obstacle');
+            
+            const type = obstacleTypes[Math.floor(Math.random() * obstacleTypes.length)];
+            const randomHeightOffset = Math.random() * 20 - 10;
+            const height = obstacleBaseHeight + randomHeightOffset;
+            obstacle.style.height = `${height}px`;
+
+            switch (type) {
+                case 'log':
+                    obstacle.classList.add('obstacle-log');
+                    obstacle.style.width = '45px';
+                    obstacle.style.height = `${height * 0.8}px`;
+                    break;
+                case 'striped':
+                    obstacle.classList.add('obstacle-striped');
+                    obstacle.style.width = '50px';
+                    break;
+                case 'wall':
+                    obstacle.classList.add('obstacle-wall');
+                    obstacle.style.width = '60px';
+                    obstacle.style.height = `${height * 1.2}px`;
+                    break;
+                case 'hay':
+                    obstacle.classList.add('obstacle-hay');
+                    obstacle.style.width = '55px';
+                    obstacle.style.height = `${height * 1.1}px`;
+                    break;
+                case 'rock':
+                    obstacle.classList.add('obstacle-rock');
+                    obstacle.style.width = '50px';
+                    obstacle.style.height = `${height * 0.7}px`;
+                    break;
+                case 'fence':
+                default:
+                    obstacle.classList.add('obstacle-fence');
+                    obstacle.style.width = `${Math.random() * 20 + 25}px`;
+                    obstacle.style.backgroundColor = `hsl(${Math.random() * 50 + 10}, 60%, 40%)`;
+                    break;
+            }
+            
+            obstacleArea.appendChild(obstacle);
+            moveObstacle(obstacle);
+        }
+
+        function moveObstacle(obstacle) {
+            let obstaclePosition = gameContainer.offsetWidth; 
+            obstacle.style.left = `${obstaclePosition}px`;
+            obstacle.collided = false;
+            obstacle.passed = false;
+
+            const moveInterval = setInterval(() => {
+                 if (!gameStarted) {
+                    clearInterval(moveInterval);
+                    setTimeout(() => { if(obstacle) obstacle.remove(); }, 2000);
+                    return;
+                }
+
+                obstaclePosition -= obstacleSpeed;
+                obstacle.style.left = `${obstaclePosition}px`;
+
+                const horseRect = horse.getBoundingClientRect();
+                const obstacleRect = obstacle.getBoundingClientRect();
+
+                if (!isFlying && !obstacle.collided && 
+                    obstacleRect.left < horseRect.right - 10 &&
+                    obstacleRect.right > horseRect.left + 10 &&
+                    obstacleRect.top < horseRect.bottom && 
+                    obstacleRect.bottom > horseRect.top) {
+                    
+                    if (!isJumping || horseRect.bottom > (obstacleRect.top + 10)) { 
+                        obstacle.collided = true;
+                        score = Math.max(0, score - 1);
+                        updateScore();
+
+                        obstacle.classList.add('obstacle-hit');
+                        setTimeout(() => {
+                            if (obstacle) obstacle.classList.remove('obstacle-hit');
+                        }, 500);
+                    }
+                }
+                
+                if (obstaclePosition + obstacle.offsetWidth < horse.offsetLeft) {
+                    if (!obstacle.passed && !obstacle.collided) {
+                        score++;
+                        updateScore();
+                    }
+                    obstacle.passed = true;
+                }
+
+                if (obstaclePosition < -obstacle.offsetWidth - 10) {
+                    clearInterval(moveInterval);
+                    obstacle.remove();
+                }
+            }, 20); 
+        }
+
+        function updateScore() {
+            scoreDisplay.textContent = `Score: ${score}`;
+            if (score >= pointsToWin) {
+                winGame();
+            }
+        }
+
+        function startGame() {
+            if (gameStarted) return;
+            gameStarted = true;
+            score = 0;
+            updateScore();
+            startMessage.classList.add('hidden');
+            invitationModal.classList.add('hidden');
+            
+            obstacleArea.innerHTML = '';
+            if(obstacleInterval) clearInterval(obstacleInterval);
+            obstacleInterval = setInterval(createObstacle, obstacleCreationInterval);
+        }
+
+        function winGame() {
+            gameStarted = false; 
+            if(obstacleInterval) clearInterval(obstacleInterval); 
+            
+            setTimeout(() => { 
+                invitationModal.classList.remove('hidden');
+            }, 500);
+        }
+        
+        function resetGame() {
+            invitationModal.classList.add('hidden');
+            startMessage.classList.remove('hidden');
+            startMessage.innerHTML = "Klik (of tik) om te springen!<br>Haal 10 punten voor de uitnodiging!";
+            score = 0;
+            updateScore();
+            gameStarted = false;
+            isJumping = false;
+            isFlying = false;
+            horse.classList.remove('jump', 'flying'); 
+            obstacleArea.innerHTML = '';
+            if(obstacleInterval) clearInterval(obstacleInterval);
+        }
+
+        // Event listeners
+        document.addEventListener('click', handleTap);
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' || e.key === ' ') {
+                e.preventDefault(); 
+                handleTap();
+            }
+        });
+        playAgainButton.addEventListener('click', (e) => {
+            e.stopPropagation(); 
+            resetGame();
+        });
+       
+        // Initialisatie
+        createClouds(); 
+        resetGame(); 
+    </script>
+
+</body>
+</html>
